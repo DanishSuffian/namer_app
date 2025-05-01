@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
         ),
         home: MyHomePage(),
-      ), 
+      ),
     );
   }
 }
@@ -30,6 +30,17 @@ class MyAppState extends ChangeNotifier {
 
   void getNext() {
     current = WordPair.random();
+    notifyListeners();
+  }
+
+  var favorites = <WordPair>{};
+
+  void toggleFavorite() {
+    if (favorites.contains(current)) {
+      favorites.remove(current);
+    } else {
+      favorites.add(current);
+    }
     notifyListeners();
   }
 }
@@ -42,24 +53,42 @@ class MyHomePage extends StatelessWidget {
       color: theme.colorScheme.primary,
       fontFamily: 'Times New Roman',
     );
+
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
+
+    IconData icon;
+    if (appState.favorites.contains(pair)) {
+      icon = Icons.favorite;
+    } else {
+      icon = Icons.favorite_border;
+    }
 
     return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            BigCard(pair: pair), 
+            BigCard(pair: pair),
             const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                appState.getNext();
-              },
-              child: Text(
-                'Next',
-                style: buttonTextStyle,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    appState.toggleFavorite();
+                  },
+                  icon: Icon(icon),
+                  label: Text('Like', style: buttonTextStyle),
+                ),
+                SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    appState.getNext();
+                  },
+                  child: Text('Next', style: buttonTextStyle),
+                ),
+              ],
             ),
           ],
         ),
@@ -69,10 +98,7 @@ class MyHomePage extends StatelessWidget {
 }
 
 class BigCard extends StatelessWidget {
-  const BigCard({
-    super.key,
-    required this.pair,
-  });
+  const BigCard({super.key, required this.pair});
 
   final WordPair pair;
 
